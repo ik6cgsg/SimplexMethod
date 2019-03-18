@@ -24,36 +24,36 @@ def initSimplex(matrix, restrictions, targetFun):
         return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
     #TODO: else
 
-def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, distIndex):
+def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
     # Computing coeffs of equation for new basis var x[distIndex]
-    restrictions[distIndex] = restrictions[srcIndex] / matrix[srcIndex][distIndex]
+    restrictions[dstIndex] = restrictions[srcIndex] / matrix[srcIndex][dstIndex]
     for i in nonBasisInd:
-        if i == distIndex:
+        if i == dstIndex:
             continue
-        matrix[distIndex][i] = matrix[srcIndex][i] / matrix[srcIndex][distIndex]
-    matrix[distIndex][srcIndex] = 1 / matrix[srcIndex][distIndex]
+        matrix[dstIndex][i] = matrix[srcIndex][i] / matrix[srcIndex][dstIndex]
+    matrix[dstIndex][srcIndex] = 1 / matrix[srcIndex][dstIndex]
     # Computing other equations coeffs
     for i in basisInd:
         if i == srcIndex:
             continue
-        restrictions[i] -= matrix[i][distIndex] * restrictions[distIndex]
+        restrictions[i] -= matrix[i][dstIndex] * restrictions[dstIndex]
         for j in nonBasisInd:
-            if j == distIndex:
+            if j == dstIndex:
                 continue
-            matrix[i][j] -= matrix[i][distIndex] * matrix[distIndex][j]
-        matrix[i][srcIndex] = -matrix[i][distIndex] * matrix[distIndex][srcIndex]
+            matrix[i][j] -= matrix[i][dstIndex] * matrix[dstIndex][j]
+        matrix[i][srcIndex] = -matrix[i][dstIndex] * matrix[dstIndex][srcIndex]
     # Computing target func
-    freeTerm += targetFun[distIndex] * restrictions[distIndex]
+    freeTerm += targetFun[dstIndex] * restrictions[dstIndex]
     for j in nonBasisInd:
-        if j == distIndex:
+        if j == dstIndex:
             continue
-        targetFun[j] -= targetFun[distIndex] * matrix[distIndex][j]
-    targetFun[srcIndex] = -targetFun[distIndex] * matrix[distIndex][srcIndex]
+        targetFun[j] -= targetFun[dstIndex] * matrix[dstIndex][j]
+    targetFun[srcIndex] = -targetFun[dstIndex] * matrix[dstIndex][srcIndex]
     # Computing new non basis ans basis sets
-    nonBasisInd.remove(distIndex)
+    nonBasisInd.remove(dstIndex)
     nonBasisInd.append(srcIndex)
     basisInd.remove(srcIndex)
-    basisInd.append(distIndex)
+    basisInd.append(dstIndex)
     # Reset new non-basis var
     for j in range(len(targetFun)):
         if j == srcIndex:
@@ -61,9 +61,45 @@ def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcI
             continue
         matrix[srcIndex][j] = 0
     restrictions[srcIndex] = 0
-    targetFun[distIndex] = 0
+    targetFun[dstIndex] = 0
     return nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm
 
+def consistPositive(targetFun):
+    for coeff in targetFun:
+        if coeff > 0:
+            return True
+    return False
+
+def getFirstPositive(targetFun):
+    for i in range(len(targetFun)):
+        if targetFun[i] > 0:
+            return i
+
 def simplex(matrix, restrictions, targetFun):
-    nonBasisInd, BasisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun)
-    
+    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun)
+    iter = 0
+
+    while consistPositive(sTarget):
+        delta = numpy.full(len(basisInd) + len(nonBasisInd), numpy.inf)
+        dstInd = getFirstPositive(sTarget)
+        for i in basisInd:
+            if sMatrix[i][dstInd] > 0:
+                delta[i] = sRestr[i] / sMatrix[i][dstInd]
+
+        srcInds = numpy.where(delta == numpy.amin(delta))
+        srcInd = srcInds[0][0]
+        if srcInd == numpy.inf:
+            return "No solution\n"
+
+        nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = pivot(nonBasisInd, basisInd, sMatrix, sRestr,
+                                                                          sTarget, freeTerm, srcInd, dstInd)
+        # DEBUG
+        print("Iteration: ", iter)
+        print(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm, sep="\n")
+        iter += 1
+
+    solution = numpy.zeros(len(nonBasisInd))
+    for i in range(len(nonBasisInd)):
+        if i in basisInd:
+            solution[i] = sRestr[i]
+    return solution

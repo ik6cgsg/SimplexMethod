@@ -1,7 +1,7 @@
 import numpy
 
 from linprog.general import getDualTask
-from simplex.simplex_table import initSimplex, pivot
+from simplex.simplex_table import initSimplex, pivot, simplex
 
 haveProductColumn = [22, 19, 14, 15]
 m = len(haveProductColumn)
@@ -58,13 +58,22 @@ def main():
     printMatr(matrix)
     print("Target function: ", target)
     print("Restrictions: ", restrictions)
+
+    x = simplex(matrix, restrictions, target)
+    print("Solution:")
+    print(x)
     """
+
     N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
-    print("Pivot 1 to 6:")
-    N, B, A, b, c, v = pivot(N, B, A, b, c, v, 5, 0)
-    print(N, B, A, b, c, v, sep="\n")
+    #print("Pivot 1 to 6:")
+    #N, B, A, b, c, v = pivot(N, B, A, b, c, v, 5, 0)
+    #print(N, B, A, b, c, v, sep="\n")
+    x = simplex(matrixEx, restrictEx, targetEx)
+    print("Solution:")
+    print(x)
+
 
 
 if __name__ == '__main__':
