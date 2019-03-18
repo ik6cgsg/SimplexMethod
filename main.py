@@ -1,7 +1,7 @@
 import numpy
 
 from linprog.general import getDualTask
-from simplex.simplex_table import initSimplex
+from simplex.simplex_table import initSimplex, pivot
 
 haveProductColumn = [22, 19, 14, 15]
 m = len(haveProductColumn)
@@ -37,7 +37,16 @@ def getStandartForm(transportCostTable, haveProductColumn, needProductRow):
 
     return matrix, restrictions, targetFun
 
+matrixEx = [
+    [1, 1, 3],
+    [2, 2, 5],
+    [4, 1, 2]
+]
+targetEx = [3, 1, 2]
+restrictEx = [30, 24, 36]
+
 def main():
+    """
     matrix, restrictions, target = getStandartForm(transportCostTable, haveProductColumn, needProductRow)
     print("Direct task:\n")
     printMatr(matrix)
@@ -49,9 +58,13 @@ def main():
     printMatr(matrix)
     print("Target function: ", target)
     print("Restrictions: ", restrictions)
-
-    N, B, A, b, c, v = initSimplex(matrix, restrictions, target)
-    print(N, B, sep="\n")
+    """
+    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx)
+    print("Init:")
+    print(N, B, A, b, c, v, sep="\n")
+    print("Pivot 1 to 6:")
+    N, B, A, b, c, v = pivot(N, B, A, b, c, v, 5, 0)
+    print(N, B, A, b, c, v, sep="\n")
 
 
 if __name__ == '__main__':
