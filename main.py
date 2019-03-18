@@ -1,8 +1,14 @@
 import numpy
-
+import pandas
 from linprog.general import getDualTask
 from simplex.simplex_table import initSimplex, pivot, simplex
 
+# Output settings
+desired_width = 600
+pandas.set_option('display.width', desired_width)
+numpy.set_printoptions(linewidth=desired_width)
+
+# 23 transport task
 haveProductColumn = [22, 19, 14, 15]
 m = len(haveProductColumn)
 needProductRow = [24, 13, 4, 17, 12]
@@ -37,43 +43,45 @@ def getStandartForm(transportCostTable, haveProductColumn, needProductRow):
 
     return matrix, restrictions, targetFun
 
-matrixEx = [
-    [1, 1, 3],
-    [2, 2, 5],
-    [4, 1, 2]
-]
-targetEx = [3, 1, 2]
-restrictEx = [30, 24, 36]
 
-def main():
-    """
+
+matrixEx = [
+    [2, 1, 1, 1, 3],
+    [3, 0, 2, -1, 6],
+    [1, 0, -1, 2, 1]
+]
+targetEx = [0, 0, 3, -2, -1]
+restrictEx = [5, 7, 2]
+
+def testExample():
+    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx)
+    print("Init:")
+    print(N, B, A, b, c, v, sep="\n")
+    x = simplex(matrixEx, restrictEx, targetEx)
+    print("Solution:")
+    print(x)
+
+def solveTask():
+    # Getting form of linear programming task
     matrix, restrictions, target = getStandartForm(transportCostTable, haveProductColumn, needProductRow)
     print("Direct task:\n")
     printMatr(matrix)
     print("Target function: ", target)
     print("Restrictions: ", restrictions)
-
+    # Go from minimize -> to maximize
     matrix, restrictions, target = getDualTask(matrix, restrictions, target)
     print("Dual task:\n")
     printMatr(matrix)
     print("Target function: ", target)
     print("Restrictions: ", restrictions)
-
+    # Find solution by simplex method (Cormen)
     x = simplex(matrix, restrictions, target)
     print("Solution:")
     print(x)
-    """
 
-    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx)
-    print("Init:")
-    print(N, B, A, b, c, v, sep="\n")
-    #print("Pivot 1 to 6:")
-    #N, B, A, b, c, v = pivot(N, B, A, b, c, v, 5, 0)
-    #print(N, B, A, b, c, v, sep="\n")
-    x = simplex(matrixEx, restrictEx, targetEx)
-    print("Solution:")
-    print(x)
-
+def main():
+    testExample()
+    # solveTask()
 
 
 if __name__ == '__main__':
