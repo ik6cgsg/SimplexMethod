@@ -13,7 +13,7 @@ def getSimplexForm(nonBasis, basis, matrix, restr, target):
         for j in nonBasis:
             sMatr[i][j] = matrix[i - n][j]
     sRestr = numpy.concatenate((numpy.zeros(n), restr))
-    sTarget = numpy.concatenate((target, numpy.zeros(n)))
+    sTarget = numpy.concatenate((target, numpy.zeros(m)))
     return nonBasis, basis, sMatr, sRestr, sTarget, 0
 
 def initSimplex(matrix, restrictions, targetFun):
@@ -75,6 +75,17 @@ def getFirstPositive(targetFun):
         if targetFun[i] > 0:
             return i
 
+def printDebugInfo(iter, N, B, A, b, c, v):
+    print("Iteration: ", iter)
+    print("Non basis indices: ", N)
+    print("Basis indices: ", B)
+    print("Matrix: ")
+    print(numpy.matrix(A))
+    print("Restrictions: ", b)
+    print("Target function: ", c)
+    print("Free term in target func (max of func): ", v)
+    print()
+
 def simplex(matrix, restrictions, targetFun):
     nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun)
     iter = 0
@@ -94,8 +105,7 @@ def simplex(matrix, restrictions, targetFun):
         nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = pivot(nonBasisInd, basisInd, sMatrix, sRestr,
                                                                           sTarget, freeTerm, srcInd, dstInd)
         # DEBUG
-        print("Iteration: ", iter)
-        print(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm, sep="\n")
+        printDebugInfo(iter, nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm)
         iter += 1
 
     solution = numpy.zeros(len(nonBasisInd))
