@@ -1,7 +1,7 @@
 import numpy
 import pandas
-from linprog.general import getDualTask
-from simplex.simplex_table import initSimplex, pivot, simplex
+from linprog.general import getDualTask, CompSign, Task
+from simplex.simplex_table import initSimplex, simplex
 
 # Output settings
 desired_width = 600
@@ -52,9 +52,11 @@ matrixEx = [
 ]
 targetEx = [0, 0, 3, -2, -1]
 restrictEx = [5, 7, 2]
+compEx = [CompSign.EQUAL, CompSign.EQUAL, CompSign.EQUAL]
+taskEx = Task.MAXIMIZE
 
 def testExample():
-    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx)
+    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
     x = simplex(matrixEx, restrictEx, targetEx)
@@ -80,6 +82,7 @@ def solveTask():
     print(x)
 
 def main():
+    print("Hello, python!")
     testExample()
     # solveTask()
 
