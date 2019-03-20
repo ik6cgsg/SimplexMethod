@@ -43,8 +43,7 @@ def getStandartForm(transportCostTable, haveProductColumn, needProductRow):
 
     return matrix, restrictions, targetFun
 
-
-
+# EX1
 matrixEx = [
     [2, 1, 1, 1, 3],
     [3, 0, 2, -1, 6],
@@ -55,13 +54,30 @@ restrictEx = [5, 7, 2]
 compEx = [CompSign.EQUAL, CompSign.EQUAL, CompSign.EQUAL]
 taskEx = Task.MAXIMIZE
 
-def testExample():
-    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
+# EX2
+matrixEx2 = [
+    [-1, 2, 3],
+    [3, -1, 1],
+    [-5, 4, 1]
+]
+targetEx2 = [12, 24, 18]
+restrictEx2 = [2, 1, 3]
+compEx2 = [CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL,
+           CompSign.ANY, CompSign.ANY, CompSign.ANY]
+taskEx2 = Task.MINIMIZE
+
+def testDual():
+    m, r, t, c, ts = getDualTask(matrixEx2, restrictEx2, targetEx2, compEx2, taskEx2)
+    print("Dual:")
+    print(m, r, t, c, ts, sep="\n")
+
+def testSimplex():
+    N, B, A, b, c, v = initSimplex(matrixEx2, restrictEx2, targetEx2, compEx2, taskEx2)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
-    x = simplex(matrixEx, restrictEx, targetEx)
-    print("Solution:")
-    print(x)
+    #x = simplex(matrixEx, restrictEx, targetEx)
+    #print("Solution:")
+    #print(x)
 
 def solveTask():
     # Getting form of linear programming task
@@ -83,7 +99,8 @@ def solveTask():
 
 def main():
     print("Hello, python!")
-    testExample()
+    # testDual()
+    testSimplex()
     # solveTask()
 
 

@@ -22,13 +22,20 @@ def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
     if task == Task.MINIMIZE:
         matrix, restrictions, targetFun, compSigns, task = \
             getDualTask(matrix, restrictions, targetFun, compSigns, task)
-    # TODO: go to <= form
-    for i in range(len(restrictions)):
+    N = len(restrictions)
+    for cs in compSigns:
+        if cs == CompSign.EQUAL:
+            N += 1
+    for i in range(N):
         if compSigns[i] == CompSign.EQUAL:
             compSigns[i] = CompSign.LESS_EQUAL
-            numpy.insert(compSigns, i + 1, CompSign.LESS_EQUAL)
-            numpy.insert(restrictions, i + 1, -restrictions[i])
-            numpy.insert(matrix, i + 1, matrix[i] * -1, 0)
+            compSigns = numpy.insert(compSigns, i + 1, CompSign.LESS_EQUAL)
+            restrictions = numpy.insert(restrictions, i + 1, -restrictions[i])
+            matrix = numpy.insert(matrix, i + 1, numpy.array(matrix[i]) * -1, 0)
+        elif compSigns[i] == CompSign.GREATER_EQUAL:
+            compSigns[i] = CompSign.LESS_EQUAL
+            restrictions[i] = -restrictions[i]
+            matrix[i] = matrix[i] * -1
 
     return matrix, restrictions, targetFun
 
@@ -37,9 +44,10 @@ def initSimplex(matrix, restrictions, targetFun, compSigns, task):
     minRestr = numpy.amin(restrictions)
     n = len(targetFun)
     m = len(restrictions)
-    if minRestr >= 0:
-        return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
+    #if minRestr >= 0:
+    return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
     # TODO: else
+
 
 def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
     # Computing coeffs of equation for new basis var x[distIndex]
