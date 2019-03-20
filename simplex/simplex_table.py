@@ -1,4 +1,6 @@
 import numpy
+from linprog.general import Task, getDualTask, CompSign
+
 
 def getSimplexForm(nonBasis, basis, matrix, restr, target):
     n = len(nonBasis)
@@ -16,13 +18,28 @@ def getSimplexForm(nonBasis, basis, matrix, restr, target):
     sTarget = numpy.concatenate((target, numpy.zeros(m)))
     return nonBasis, basis, sMatr, sRestr, sTarget, 0
 
-def initSimplex(matrix, restrictions, targetFun):
+def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
+    if task == Task.MINIMIZE:
+        matrix, restrictions, targetFun, compSigns, task = \
+            getDualTask(matrix, restrictions, targetFun, compSigns, task)
+    # TODO: go to <= form
+    for i in range(len(restrictions)):
+        if compSigns[i] == CompSign.EQUAL:
+            compSigns[i] = CompSign.LESS_EQUAL
+            numpy.insert(compSigns, i + 1, CompSign.LESS_EQUAL)
+            numpy.insert(restrictions, i + 1, -restrictions[i])
+            numpy.insert(matrix, i + 1, matrix[i] * -1, 0)
+
+    return matrix, restrictions, targetFun
+
+def initSimplex(matrix, restrictions, targetFun, compSigns, task):
+    matrix, restrictions, targetFun = getCanonicalForm(matrix, restrictions, targetFun, compSigns, task)
     minRestr = numpy.amin(restrictions)
     n = len(targetFun)
     m = len(restrictions)
     if minRestr >= 0:
         return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
-    #TODO: else
+    # TODO: else
 
 def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
     # Computing coeffs of equation for new basis var x[distIndex]
@@ -86,8 +103,8 @@ def printDebugInfo(iter, N, B, A, b, c, v):
     print("Free term in target func (max of func): ", v)
     print()
 
-def simplex(matrix, restrictions, targetFun):
-    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun)
+def simplex(matrix, restrictions, targetFun, compSigns, task):
+    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun, compSigns, task)
     iter = 0
 
     while consistPositive(sTarget):
