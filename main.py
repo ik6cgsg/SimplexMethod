@@ -66,13 +66,23 @@ compEx2 = [CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUA
            CompSign.ANY, CompSign.ANY, CompSign.ANY]
 taskEx2 = Task.MINIMIZE
 
+# EX3
+m = [
+    [2, -1],
+    [1, -5]
+]
+t = [2, -1]
+r = [2, -4]
+co = [CompSign.LESS_EQUAL, CompSign.LESS_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL]
+tsk = Task.MAXIMIZE
+
 def testDual():
     m, r, t, c, ts = getDualTask(matrixEx2, restrictEx2, targetEx2, compEx2, taskEx2)
     print("Dual:")
     print(m, r, t, c, ts, sep="\n")
 
 def testSimplex():
-    N, B, A, b, c, v = initSimplex(matrixEx2, restrictEx2, targetEx2, compEx2, taskEx2)
+    N, B, A, b, c, v = initSimplex(m, r, t, co, tsk)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
     #x = simplex(matrixEx, restrictEx, targetEx)

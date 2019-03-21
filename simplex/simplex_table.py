@@ -15,7 +15,7 @@ def getSimplexForm(nonBasis, basis, matrix, restr, target):
         for j in nonBasis:
             sMatr[i][j] = matrix[i - n][j]
     sRestr = numpy.concatenate((numpy.zeros(n), restr))
-    sTarget = numpy.concatenate((target, numpy.zeros(m)))
+    sTarget = numpy.concatenate((target, numpy.full(size - len(target), 0)))
     return nonBasis, basis, sMatr, sRestr, sTarget, 0
 
 def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
@@ -44,9 +44,27 @@ def initSimplex(matrix, restrictions, targetFun, compSigns, task):
     minRestr = numpy.amin(restrictions)
     n = len(targetFun)
     m = len(restrictions)
-    #if minRestr >= 0:
-    return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
-    # TODO: else
+    if minRestr >= 0:
+        return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
+    # Auxiliary system
+    mAux = numpy.insert(matrix, 0, -1, 1)
+    tAux = [-1]
+    nonBasis, basis, mAux, restrictions, tAux, free = getSimplexForm(list(range(n + 1)), list(range(n + 1, n + 1 + m)),
+                                                                     mAux, restrictions, tAux)
+    minInds = numpy.where(restrictions == minRestr)
+    k = minInds[0][0]
+    l = k
+    nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, 0, l, 0)
+    x, nonBasis, basis, mAux, restrictions, tAux, free = simplexCycle(nonBasis, basis, mAux, restrictions, tAux, free)
+    if x[0] == 0:
+        if 0 in basis:
+            nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, free, 0, l)
+        mAux = numpy.delete(mAux, 0, 1)
+        mAux = numpy.delete(mAux, 0, 0)
+        # TODO: remove basis from target func
+        return getSimplexForm(nonBasis, basis, mAux, restrictions, tAux)
+    else:
+        return "No solution"
 
 
 def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
@@ -57,6 +75,7 @@ def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcI
             continue
         matrix[dstIndex][i] = matrix[srcIndex][i] / matrix[srcIndex][dstIndex]
     matrix[dstIndex][srcIndex] = 1 / matrix[srcIndex][dstIndex]
+    matrix[dstIndex][dstIndex] = 0
     # Computing other equations coeffs
     for i in basisInd:
         if i == srcIndex:
@@ -67,6 +86,7 @@ def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcI
                 continue
             matrix[i][j] -= matrix[i][dstIndex] * matrix[dstIndex][j]
         matrix[i][srcIndex] = -matrix[i][dstIndex] * matrix[dstIndex][srcIndex]
+        matrix[i][dstIndex] = 0
     # Computing target func
     freeTerm += targetFun[dstIndex] * restrictions[dstIndex]
     for j in nonBasisInd:
@@ -111,8 +131,7 @@ def printDebugInfo(iter, N, B, A, b, c, v):
     print("Free term in target func (max of func): ", v)
     print()
 
-def simplex(matrix, restrictions, targetFun, compSigns, task):
-    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun, compSigns, task)
+def simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm):
     iter = 0
 
     while consistPositive(sTarget):
@@ -132,9 +151,14 @@ def simplex(matrix, restrictions, targetFun, compSigns, task):
         # DEBUG
         printDebugInfo(iter, nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm)
         iter += 1
-
     solution = numpy.zeros(len(nonBasisInd))
     for i in range(len(nonBasisInd)):
         if i in basisInd:
             solution[i] = sRestr[i]
+    return solution, nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm
+
+def simplex(matrix, restrictions, targetFun, compSigns, task):
+    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun, compSigns, task)
+    solution, _, _, _, _, _, _ = \
+        simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm)
     return solution
