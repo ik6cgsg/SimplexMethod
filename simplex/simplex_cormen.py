@@ -20,7 +20,7 @@ def getSimplexForm(nonBasis, basis, matrix, restr, target):
     sRestr = sRestr.astype(float)
     sTarget = numpy.concatenate((target, numpy.full(size - len(target), 0)))
     sTarget = sTarget.astype(float)
-    return nonBasis, basis, sMatr, sRestr, sTarget, 0
+    return nonBasis, basis, sMatr, sRestr, sTarget
 
 def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
     if task == Task.MINIMIZE:
@@ -43,22 +43,23 @@ def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
 
     return matrix, restrictions, targetFun
 
-def initSimplex(matrix, restrictions, targetFun, compSigns, task):
+def initSimplex(matrix, restrictions, targetFun, compSigns, task, free):
     matrix, restrictions, targetFun = getCanonicalForm(matrix, restrictions, targetFun, compSigns, task)
     minRestr = numpy.amin(restrictions)
     n = len(targetFun)
     m = len(restrictions)
     if minRestr >= 0:
-        return getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
+        N, B, A, b, c = getSimplexForm(list(range(n)), list(range(n, n + m)), matrix, restrictions, targetFun)
+        return N, B, A, b, c, free
     # Auxiliary system
     mAux = numpy.insert(matrix, 0, -1, 1)
     tAux = [-1]
-    nonBasis, basis, mAux, restrictions, tAux, free = getSimplexForm(list(range(n + 1)), list(range(n + 1, n + 1 + m)),
+    nonBasis, basis, mAux, restrictions, tAux = getSimplexForm(list(range(n + 1)), list(range(n + 1, n + 1 + m)),
                                                                      mAux, restrictions, tAux)
     minInds = numpy.where(restrictions == minRestr)
     k = minInds[0][0]
     l = k
-    nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, 0, l, 0)
+    nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, free, l, 0)
     x, nonBasis, basis, mAux, restrictions, tAux, free = simplexCycle(nonBasis, basis, mAux, restrictions, tAux, free)
     if x[0] == 0:
         if 0 in basis:
@@ -80,7 +81,8 @@ def initSimplex(matrix, restrictions, targetFun, compSigns, task):
         restrictions = numpy.delete(restrictions, 0)
         return nonBasis, basis, mAux, restrictions, tAux, free
     else:
-        return "No solution"
+        print("No solution")
+        return -1
 
 
 def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
@@ -141,7 +143,7 @@ def printDebugInfo(iter, N, B, A, b, c, v):
     print("Non basis indices: ", N)
     print("Basis indices: ", B)
     print("Matrix: ")
-    print(numpy.matrix(A))
+    print(A)
     print("Restrictions: ", b)
     print("Target function: ", c)
     print("Free term in target func (max of func): ", v)
@@ -173,8 +175,12 @@ def simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm):
             solution[i] = sRestr[i]
     return solution, nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm
 
-def simplex(matrix, restrictions, targetFun, compSigns, task):
-    nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = initSimplex(matrix, restrictions, targetFun, compSigns, task)
-    solution, _, _, _, _, _, _ = \
-        simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm)
-    return solution
+def simplex(matrix, restrictions, targetFun, compSigns, task, free):
+    try:
+        nonBasisInd, basisInd, sMatrix, sRestr, sTarget, free = initSimplex(matrix, restrictions,
+                                                                            targetFun, compSigns, task, free)
+    except (ValueError, TypeError):
+        return "no", "solution"
+    solution, _, _, _, _, _, value = \
+        simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, free)
+    return solution, value

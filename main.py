@@ -92,9 +92,11 @@ def testSimplex():
     N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
-    x = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
+    x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
     print("Solution:")
     print(x)
+    print("Value:")
+    print(v)
 
 def solveTask():
     # Getting form of linear programming task
@@ -112,9 +114,11 @@ def solveTask():
     print("Restrictions: ", restrictions)
     '''
     # Find solution by simplex method (Cormen)
-    x = simplex(matrix, restrictions, target, comps, task)
+    x, val = simplex(matrix, restrictions, target, comps, task, 0)
     print("Solution:")
     print(x)
+    print("Value:")
+    print(val)
 
 def main():
     print("Hello, python!")
