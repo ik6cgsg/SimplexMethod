@@ -27,6 +27,21 @@ def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
         matrix, restrictions, targetFun, compSigns, task = \
             getDualTask(matrix, restrictions, targetFun, compSigns, task)
     N = len(restrictions)
+    for i in range(N, len(compSigns)):
+        if compSigns[i] == CompSign.ANY:
+            print("Shit")
+            l = len(targetFun)
+            matrix = numpy.insert(matrix, l, 0, 1)
+            matrix = numpy.insert(matrix, l, 0, 1)
+            for j in range(N):
+                matrix[j][l] = matrix[j][i - N]
+                matrix[j][l + 1] = matrix[j][i - N] * -1
+                matrix[j][i - N] = 0
+            targetFun = numpy.concatenate((targetFun, numpy.zeros(2)))
+            targetFun[l] = targetFun[i - N]
+            targetFun[l + 1] = targetFun[i - N] * -1
+            targetFun[i - N] = 0
+
     for cs in compSigns:
         if cs == CompSign.EQUAL:
             N += 1
@@ -40,6 +55,9 @@ def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
             compSigns[i] = CompSign.LESS_EQUAL
             restrictions[i] = -restrictions[i]
             matrix[i] = matrix[i] * -1
+
+    print("----Canon form----")
+    printDebugInfo(228, [1488], [322], matrix, restrictions, targetFun, 0)
 
     return matrix, restrictions, targetFun
 

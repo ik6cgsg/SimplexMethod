@@ -30,8 +30,12 @@ def getDualTask(matrix, restrictions, targetFun, compSigns, task):
             elif compSigns[i] == CompSign.EQUAL:
                 dualCompSigns[i + rLen] = CompSign.ANY
             else:
-                print("Cant solve this(")
-                exit(-1)
+                dualCompSigns[i + rLen] = CompSign.GREATER_EQUAL
+                dualTargetFun[i] = dualTargetFun[i] * -1
+                for j in range(targLen):
+                    dualMatrix[j][i] = dualMatrix[j][i] * -1
+                #print("Cant solve this(")
+                #exit(-1)
         # variables
         for i in range(rLen, compLen):
             if compSigns[i] == CompSign.GREATER_EQUAL:
@@ -50,8 +54,12 @@ def getDualTask(matrix, restrictions, targetFun, compSigns, task):
             elif compSigns[i] == CompSign.EQUAL:
                 dualCompSigns[i + rLen] = CompSign.ANY
             else:
-                print("Cant solve this(")
-                exit(-1)
+                dualCompSigns[i + rLen] = CompSign.GREATER_EQUAL
+                dualTargetFun[i] = dualTargetFun[i] * -1
+                for j in range(targLen):
+                    dualMatrix[j][i] = dualMatrix[j][i] * -1
+                #print("Cant solve this(")
+                #exit(-1)
         # variables
         for i in range(rLen, compLen):
             if compSigns[i] == CompSign.GREATER_EQUAL:

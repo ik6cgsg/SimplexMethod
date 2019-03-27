@@ -49,50 +49,33 @@ def getStandartForm(transportCostTable, haveProductColumn, needProductRow):
 
     return matrix, restrictions, targetFun, comps, task
 
-# EX1
+# Example
 matrixEx = [
-    [2, 1, 1, 1, 3],
-    [3, 0, 2, -1, 6],
-    [1, 0, -1, 2, 1]
-]
-targetEx = [0, 0, 3, -2, -1]
-restrictEx = [5, 7, 2]
-compEx = [CompSign.EQUAL, CompSign.EQUAL, CompSign.EQUAL,
-          CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL]
+            [1, -2, 3, 0, -5],
+            [0, 2, 1, 6, 2],
+            [6, 0, -3, 0, 1],
+            [1, 3, 4, 5, 2],
+            [6, 0, 7, -10, 5]
+        ]
+targetEx = [13, -2, 11, 4, 2]
+freeEx = 0
+restrictEx = [10, 20, -8, 5, 15]
+compEx = [CompSign.EQUAL, CompSign.LESS_EQUAL, CompSign.GREATER_EQUAL, CompSign.EQUAL, CompSign.EQUAL,
+          CompSign.ANY, CompSign.ANY,
+          CompSign.ANY, CompSign.ANY,
+          CompSign.GREATER_EQUAL]
 taskEx = Task.MAXIMIZE
 
-# EX2
-matrixEx2 = [
-    [-1, 2, 3],
-    [3, -1, 1],
-    [-5, 4, 1]
-]
-targetEx2 = [12, 24, 18]
-restrictEx2 = [2, 1, 3]
-compEx2 = [CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL,
-           CompSign.ANY, CompSign.ANY, CompSign.ANY]
-taskEx2 = Task.MINIMIZE
-
-# EX3
-m = [
-    [2, -1],
-    [1, -5]
-]
-t = [2, -1]
-r = [2, -4]
-co = [CompSign.LESS_EQUAL, CompSign.LESS_EQUAL, CompSign.GREATER_EQUAL, CompSign.GREATER_EQUAL]
-tsk = Task.MAXIMIZE
-
 def testDual():
-    m, r, t, c, ts = getDualTask(matrixEx2, restrictEx2, targetEx2, compEx2, taskEx2)
+    m, r, t, c, ts = getDualTask(matrixEx, restrictEx, targetEx, compEx, taskEx)
     print("Dual:")
     print(m, r, t, c, ts, sep="\n")
 
 def testSimplex():
-    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
+    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
     print("Init:")
     print(N, B, A, b, c, v, sep="\n")
-    x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx)
+    x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
     print("Solution:")
     print(x)
     print("Value:")
@@ -123,8 +106,8 @@ def solveTask():
 def main():
     print("Hello, python!")
     # testDual()
-    # testSimplex()
-    solveTask()
+    testSimplex()
+    # solveTask()
 
 
 if __name__ == '__main__':

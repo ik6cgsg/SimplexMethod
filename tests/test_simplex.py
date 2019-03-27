@@ -81,3 +81,23 @@ class TestSimplex:
         x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
         assert(x == "no")
         assert(v == "solution")
+
+    def test5(self):
+        matrixEx = [
+            [1, -2, 3, 0, -5],
+            [0, 2, 1, 6, 2],
+            [6, 0, -3, 0, 1],
+            [1, 3, 4, 5, 2],
+            [6, 0, 7, -10, 5]
+        ]
+        targetEx = [13, -2, 11, 4, 2]
+        freeEx = 0
+        restrictEx = [10, 20, -8, 5, 15]
+        compEx = [CompSign.EQUAL, CompSign.LESS_EQUAL, CompSign.GREATER_EQUAL, CompSign.EQUAL, CompSign.EQUAL,
+                  CompSign.ANY, CompSign.ANY,
+                  CompSign.ANY, CompSign.ANY,
+                  CompSign.GREATER_EQUAL]
+        taskEx = Task.MAXIMIZE
+        x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
+        #assert(x == 4)
+        assert(v == (1287 * 101 + 22) / 101 / 3)
