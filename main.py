@@ -51,19 +51,19 @@ def getStandartForm(transportCostTable, haveProductColumn, needProductRow):
 
 # Example
 matrixEx = [
-            [1, -2, 3, 0, -5],
-            [0, 2, 1, 6, 2],
-            [6, 0, -3, 0, 1],
-            [1, 3, 4, 5, 2],
-            [6, 0, 7, -10, 5]
+            [ 1, 0,  0, 1, -5],
+            [ 0, 2,  1, 0,  2],
+            [-6, 0, -3, 0,  1],
+            [ 0, 3,  0, 2,  2],
+            [ 6, 0,  7, 0, -5]
         ]
-targetEx = [13, -2, 11, 4, 2]
+targetEx = [0, 1, 0, 4, 2]
 freeEx = 0
-restrictEx = [10, 20, -8, 5, 15]
-compEx = [CompSign.EQUAL, CompSign.LESS_EQUAL, CompSign.GREATER_EQUAL, CompSign.EQUAL, CompSign.EQUAL,
+restrictEx = [18, 1, 25, -11, 3]
+compEx = [CompSign.EQUAL, CompSign.EQUAL, CompSign.GREATER_EQUAL, CompSign.EQUAL, CompSign.LESS_EQUAL,
           CompSign.ANY, CompSign.ANY,
-          CompSign.ANY, CompSign.ANY,
-          CompSign.GREATER_EQUAL]
+          CompSign.ANY, CompSign.GREATER_EQUAL,
+          CompSign.ANY]
 taskEx = Task.MAXIMIZE
 
 def testDual():
@@ -72,9 +72,9 @@ def testDual():
     print(m, r, t, c, ts, sep="\n")
 
 def testSimplex():
-    N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
-    print("Init:")
-    print(N, B, A, b, c, v, sep="\n")
+    #N, B, A, b, c, v = initSimplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
+    #print("Init:")
+    #print(N, B, A, b, c, v, sep="\n")
     x, v = simplex(matrixEx, restrictEx, targetEx, compEx, taskEx, freeEx)
     print("Solution:")
     print(x)

@@ -1,6 +1,10 @@
 import numpy
 from linprog.general import Task, getDualTask, CompSign
 
+treshold = 1e-6
+
+def equal(v1, v2):
+    return v1 - treshold <= v2 <= v1 + treshold
 
 def getSimplexForm(nonBasis, basis, matrix, restr, target):
     basis = numpy.array(basis, dtype=int)
@@ -22,11 +26,32 @@ def getSimplexForm(nonBasis, basis, matrix, restr, target):
     sTarget = sTarget.astype(float)
     return nonBasis, basis, sMatr, sRestr, sTarget
 
+
+def clearVars(nc, nb, matrix, targetFun):
+    br = False
+    joff = 0
+    for j in range(nc):
+        #if j == len(matrix[0]):
+        #    break
+        br = False
+        for i in range(nb):
+            if matrix[i][j - joff] != 0:
+                br = True
+                break
+        if br:
+            continue
+        if targetFun[j - joff] == 0:
+            targetFun = numpy.delete(targetFun, j - joff)
+            matrix = numpy.delete(matrix, j - joff, 1)
+            joff += 1
+    return matrix, targetFun
+
 def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
     if task == Task.MINIMIZE:
         matrix, restrictions, targetFun, compSigns, task = \
             getDualTask(matrix, restrictions, targetFun, compSigns, task)
     N = len(restrictions)
+
     for i in range(N, len(compSigns)):
         if compSigns[i] == CompSign.ANY:
             print("Shit")
@@ -56,6 +81,8 @@ def getCanonicalForm(matrix, restrictions, targetFun, compSigns, task):
             restrictions[i] = -restrictions[i]
             matrix[i] = matrix[i] * -1
 
+    #matrix, targetFun = clearVars(len(targetFun), len(restrictions), matrix, targetFun)
+
     print("----Canon form----")
     printDebugInfo(228, [1488], [322], matrix, restrictions, targetFun, 0)
 
@@ -79,9 +106,9 @@ def initSimplex(matrix, restrictions, targetFun, compSigns, task, free):
     l = k
     nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, free, l, 0)
     x, nonBasis, basis, mAux, restrictions, tAux, free = simplexCycle(nonBasis, basis, mAux, restrictions, tAux, free)
-    if x[0] == 0:
+    if equal(x[0], 0):
         if 0 in basis:
-            nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, free, 0, l)
+            nonBasis, basis, mAux, restrictions, tAux, free = pivot(nonBasis, basis, mAux, restrictions, tAux, free, 0, nonBasis[0])
         tAux[0] = 0
         for i in range(len(targetFun)):
             tAux[i + 1] = targetFun[i]
@@ -97,10 +124,11 @@ def initSimplex(matrix, restrictions, targetFun, compSigns, task, free):
         basis = numpy.array([x - 1 for x in basis])
         nonBasis = numpy.array([x - 1 for x in nonBasis])
         restrictions = numpy.delete(restrictions, 0)
+        #mAux, tAux = clearVars(len(tAux), len(restrictions), mAux, tAux)
+        printDebugInfo(1337, nonBasis, basis, mAux, restrictions, tAux, free)
         return nonBasis, basis, mAux, restrictions, tAux, free
     else:
-        print("No solution")
-        return -1
+        return "No solution"
 
 
 def pivot(nonBasisInd, basisInd, matrix, restrictions, targetFun, freeTerm, srcIndex, dstIndex):
@@ -179,8 +207,9 @@ def simplexCycle(nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm):
 
         srcInds = numpy.where(delta == numpy.amin(delta))
         srcInd = srcInds[0][0]
-        if srcInd == numpy.inf:
-            return "No solution\n"
+        if delta[srcInd] == numpy.inf:
+            print("No solution")
+            exit(1)
 
         nonBasisInd, basisInd, sMatrix, sRestr, sTarget, freeTerm = pivot(nonBasisInd, basisInd, sMatrix, sRestr,
                                                                           sTarget, freeTerm, srcInd, dstInd)
